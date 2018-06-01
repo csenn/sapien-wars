@@ -4,7 +4,7 @@ import Paper from '@material-ui/core/Paper'
 import Map from './map/Map'
 import TimeLine from './timeline/TimeLine'
 import { makeLines } from './utils'
-import { filterWarGroups, filterWars, filterBattles } from './filters'
+import { filterWarGroups, filterTimelineItems, filterMapItems } from './filters'
 import { init, setFilterEarliestTime, setFilterLatestTime, setFilterWarGroup } from './data/actions'
 
 const MAPBOX_TOKEN = process.env.MAPBOX_ACCESS_TOKEN; // eslint-disable-line
@@ -43,8 +43,9 @@ class MapView extends React.Component {
   }
   render () {
     const {
-      wars,
-      battles,
+      timelineItems,
+      mapItems,
+      metaCounts,
       warGroups,
       lines,
       warsEarliestTime,
@@ -59,9 +60,9 @@ class MapView extends React.Component {
 
         <Paper style={{ position: 'relative', padding: '0 18px', zIndex: 1 }}>
           <h3 style={{padding: 25, margin: 0, fontSize: '32px', color: 'rgb(42, 65, 113)'}}>
-            WAR
+            Sapien Wars
             <span style={{fontSize: '16px', marginLeft: '25px', color: 'black'}}>
-              4000 years, 560 wars, 6500 battles
+              {metaCounts.years} years, {metaCounts.war} wars, {metaCounts.battle} battles
             </span>
           </h3>
         </Paper>
@@ -72,7 +73,7 @@ class MapView extends React.Component {
               ready={this._isMounted}
               height={this.state.height}
               width={this.state.width}
-              battles={battles}
+              battles={mapItems}
               lines={lines}
               earliestTime={filterEarliestTime}
               latestTime={filterLatestTime}
@@ -81,7 +82,7 @@ class MapView extends React.Component {
 
           <div style={{position: 'absolute', top: '65%', left: 0, right: 0, bottom: 0}}>
             <TimeLine
-              battles={wars}
+              battles={timelineItems}
               warGroups={warGroups}
               warsEarliestTime={warsEarliestTime}
               warsLatestTime={warsLatestTime}
@@ -116,85 +117,36 @@ function mapStateToProps (state) {
     console.log(state)
   }
   const {
-    wars,
-    battles,
+    models,
     warGroups,
     warsEarliestTime,
     warsLatestTime,
     filterEarliestTime,
     filterLatestTime,
     filterWarGroup,
+    metaCounts,
     selectedWars
   } = state.mapView
 
-  const filteredWarGroups = filterWarGroups(warGroups, wars, battles)// Object.values(warGroups)
-  const filteredWars = filterWars(wars, filterWarGroup, filterEarliestTime, filterLatestTime) // Object.values(wars)
-  const filteredBattles = filterBattles(wars, battles, selectedWars, warsEarliestTime, warsLatestTime, filterEarliestTime, filterLatestTime)
-  // const battleModels = Object.values(battles)
+  const modelArr = Object.values(models)
+  const filteredWarGroups = filterWarGroups(Object.values(warGroups))
+  const timelineItems = filterTimelineItems(modelArr, filterWarGroup, filterEarliestTime, filterLatestTime)
+  const mapItems = filterMapItems(modelArr, filterWarGroup, filterEarliestTime, filterLatestTime)
 
-   // warGroups.map(id => models[id])
-  // const warModels = wars.map(id => models[id])
-  // const battleModels = battles.map(id => models[id])
-
-  // console.log(filteredWarGroups, filteredWars, filteredBattles)
-
-  // const filteredWars = warModels.filter(war => {
-  //   if (filterWarGroup && war.part_of !== filterWarGroup) {
-  //     return false
-  //   }
-  //
-  //   /* Without time war doesnt event render so might as well filter here */
-  //   return war.startTimeMoment &&
-  //     war.endTimeMoment &&
-  //     war.startTimeMoment.isSameOrAfter(filterEarliestTime) &&
-  //     war.endTimeMoment.isSameOrBefore(filterLatestTime)
-  // })
-  //
-  // const filterWarGroupFound = warGroups.find(group => group.item === filterWarGroup)
-  //
-  // const filteredBattles = battles.filter(battle => {
-  //   if (!battle.coordinates) {
-  //     return false
-  //   }
-  //
-  //   /* Only show battles for any wars in this wargroup */
-  //   if (filterWarGroupFound) {
-  //     let found
-  //     for (let i = 0; i < battle.wars.length; i++) {
-  //       const warId = battle.wars[i].item
-  //       if (filterWarGroupFound.item === warId || filterWarGroupFound.wars.find(w => w.item === warId)) {
-  //         found = true
-  //         break
-  //       }
-  //     }
-  //     if (!found) {
-  //       return false
-  //     }
-  //   }
-  //
-  //   /* Just render everything before filtering */
-  //   if (warsEarliestTime.isSame(filterEarliestTime) && warsLatestTime.isSame(filterLatestTime)) {
-  //     return true
-  //   }
-  //
-  //   return battle.startTimeMoment &&
-  //     battle.endTimeMoment &&
-  //     battle.startTimeMoment.isSameOrAfter(filterEarliestTime) &&
-  //     battle.endTimeMoment.isSameOrBefore(filterLatestTime)
-  // })
-
-  const lines = [] // warsLatestTime && makeLines(filteredBattles, warsLatestTime.diff(warsEarliestTime))
+  const lines = makeLines(mapItems, warsLatestTime && warsLatestTime.diff(warsEarliestTime))
 
   return {
-    warGroupDict: warGroups,
+    // warGroupDict: warGroups,
     warGroups: filteredWarGroups,
-    wars: filteredWars,
-    battles: filteredBattles,
+    // wars: filteredWars,
+    timelineItems,
+    mapItems,
     warsEarliestTime,
     warsLatestTime,
     filterEarliestTime,
     filterLatestTime,
     filterWarGroup,
+    metaCounts,
     lines: lines || []
   }
 }

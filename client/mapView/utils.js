@@ -27,26 +27,43 @@ export function colorInterpolator (fraction) {
   ]
 }
 
-export function getTimelineDates () {
+// const ONE_MONTH = 1000 * 60 * 60 * 24 * 30
+const ONE_THOUSAND_YEARS = 1000 * 60 * 60 * 24 * 365 * 1000
+export function getTimelineDates (earliestTime, latestTime) {
+  const timeDiff = latestTime.diff(earliestTime)
+
+  /* Return clean timeline for more then 1000 years */
+  if (timeDiff > ONE_THOUSAND_YEARS) {
+    return [
+      moment().year(2000),
+      moment().year(1500),
+      moment().year(1000),
+      moment().year(500),
+      moment().year(0),
+      moment().year(-500),
+      moment().year(-1000),
+      moment().year(-1500)
+    ]
+  }
+
+  const interval = timeDiff / 8
+  const results = []
+  for (let i = 1; i < 8; i++) {
+    results.push(earliestTime.clone().add((i * interval), 'ms'))
+  }
+  return results
+
   // const firstDate = moment().setYear(2000)
-  return [
-    moment().year(2000),
-    moment().year(1500),
-    moment().year(1000),
-    moment().year(500),
-    moment().year(0),
-    moment().year(-500),
-    moment().year(-1000),
-    moment().year(-1500)
-  ]
 }
 
 /* Assumes rows have keys 'startTimeMoment' and 'endTimeMoment' which is a moment object.
 Not great, but ok for now.  */
 export function getTimeRange (rows) {
   let earliestTime, latestTime
-
   rows.forEach(row => {
+    if (!row) {
+      return
+    }
     if (row.startTimeMoment && (!earliestTime || row.startTimeMoment.isBefore(earliestTime))) {
       earliestTime = row.startTimeMoment
     }
@@ -60,7 +77,7 @@ export function getTimeRange (rows) {
 }
 
 function getCost (battleA, battleB, timeRange) {
-  if (battleA.item === battleB.item) {
+  if (battleA.wikiId === battleB.wikiId) {
     return BIG_NUMBER
   }
 

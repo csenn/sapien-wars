@@ -54,11 +54,19 @@ export default class Home extends React.Component {
       sizeScale: 15,
       getPosition: d => d.coordinates,
       getIcon: d => 'marker',
-      getSize: d => 2,
+      getSize: d => {
+        if (battles.length > 400) {
+          return d.type_label === 'war' ? 2 : 1
+        }
+        return d.type_label === 'war' ? 3 : 2
+      },
       onHover: this.hoverBattle,
       getColor: d => {
+        if (d.type_label === 'war') {
+          return [42, 65, 113]
+        }
         if (!earliestTime || !d.startTimeMoment || !d.endTimeMoment) {
-          return [120, 120, 120]
+          return [200, 200, 200]
         }
         const timeFrame = latestTime.diff(earliestTime)
         const fromStart = d.startTimeMoment.diff(earliestTime)
@@ -66,24 +74,22 @@ export default class Home extends React.Component {
       }
     })
 
-    const arcLayer = new LineLayer({
-      data: lines,
-      pickable: true,
-      strokeWidth: 6,
-      getSourcePosition: d => d.from.coordinates,
-      getTargetPosition: d => d.to.coordinates,
-      // getSourceColor: d => [Math.sqrt(d.inbound), 140, 0],
-      // getTargetColor: d => [Math.sqrt(d.outbound), 140, 0],
-      getColor: d => {
-        if (!earliestTime) {
-          return [120, 120, 120]
-        }
-        const timeFrame = latestTime.diff(earliestTime)
-        const fromStart = d.from.startTimeMoment.diff(earliestTime)
-        return colorInterpolator(fromStart / timeFrame)
-      }
-      // onHover: ({object}) => setTooltip(`${object.from.name} to ${object.to.name}`)
-    })
+    // const lineLayer = new LineLayer({
+    //   data: lines,
+    //   pickable: true,
+    //   strokeWidth: 2,
+    //   getSourcePosition: d => d.from.coordinates,
+    //   getTargetPosition: d => d.to.coordinates,
+    //   getColor: d => {
+    //     if (!earliestTime) {
+    //       return [200, 200, 200]
+    //     }
+    //     const timeFrame = latestTime.diff(earliestTime)
+    //     const fromStart = d.from.startTimeMoment.diff(earliestTime)
+    //     return colorInterpolator(fromStart / timeFrame)
+    //   }
+    //   // onHover: ({object}) => setTooltip(`${object.from.name} to ${object.to.name}`)
+    // })
 
     return (
       <Fragment>
@@ -100,7 +106,7 @@ export default class Home extends React.Component {
             width={width}
             height={height}
             debug
-            layers={[iconLayer, arcLayer]} />
+            layers={[iconLayer]} />
         </MapGL>
       </Fragment>
     )

@@ -1,36 +1,8 @@
+import { batchActions } from 'redux-batched-actions'
 import axios from 'axios'
-import sortBy from 'lodash/sortBy'
-import take from 'lodash/take'
 import moment from 'moment'
 import { getTimeRange } from '../utils'
-
 export const HOME_ADD_ITEM = 'HOME_ADD_ITEM'
-
-// function prepareData (data) {
-//   let earliestTime, latestTime
-//
-//   const rows = sortBy(data.map(row => {
-//     const startTimeMoment = row.start_time && moment(row.start_time)
-//     const endTimeMoment = row.end_time && moment(row.end_time)
-//
-//     if (row.start_time && (!earliestTime || startTimeMoment < earliestTime)) {
-//       earliestTime = startTimeMoment
-//     }
-//
-//     if (row.end_time && (!latestTime || endTimeMoment > latestTime)) {
-//       latestTime = endTimeMoment
-//     }
-//
-//     return {
-//       ...row,
-//       startTimeMoment,
-//       endTimeMoment,
-//       start_ms: startTimeMoment && startTimeMoment.valueOf()
-//     }
-//   }), 'start_ms')
-//
-//   return { rows, earliestTime, latestTime }
-// }
 
 /* Shouldnt really add moment instances to store but its faster for now */
 function addMomentDates (data) {
@@ -40,84 +12,90 @@ function addMomentDates (data) {
   })
 }
 
-// function buildWarGroups (wars) {
-//   const groups = {}
-//
-//   wars.forEach(war => {
-//     if (!war.part_of) {
-//       return
-//     }
-//     if (!groups[war.part_of]) {
-//       groups[war.part_of] = {
-//         item: war.part_of,
-//         item_label: war.part_of_label,
-//         wars: [],
-//         warCount: 0
-//       }
-//     }
-//     groups[war.part_of].wars.push({
-//       item: war.item,
-//       item_label: war.item_label
-//     })
-//     groups[war.part_of].warCount += 1
-//   })
-//
-//   return take(sortBy(Object.values(groups), 'warCount').reverse(), 150)
-// }
+function buildWarGroups (models) {
+  const warGroups = {}
 
-// function fetchWars () {
-//   return dispatch => {
-//     axios.get('/wars').then(response => {
-//       const { rows, earliestTime, latestTime } = prepareData(response.data)
-//
-//       dispatch({
-//         type: 'SET_WARS',
-//         payload: {
-//           wars: rows,
-//           warGroups: buildWarGroups(rows),
-//           warsEarliestTime: earliestTime,
-//           warsLatestTime: latestTime
-//         }
-//       })
-//     })
-//   }
-// }
-//
-// function fetchBattles () {
-//   return dispatch => {
-//     axios.get('/battles').then(response => {
-//       const { rows } = prepareData(response.data)
-//       dispatch({ type: 'SET_BATTLES', payload: rows })
-//     })
-//   }
-// }
+  const metaCounts = {
+    war: 0,
+    battle: 0
+  }
+
+  Object.values(models).forEach(model => {
+    if (model.type_label === 'war') {
+      metaCounts.war += 1
+    } else if (model.type_label === 'battle' || model.type_label === 'naval battle') {
+      metaCounts.battle += 1
+    }
+
+    model.part_of.forEach(id => {
+      if (!warGroups[id]) {
+        warGroups[id] = {
+          id: id,
+          label: models[id].label,
+          children: []
+        }
+      }
+      warGroups[id].children.push(model.wikiId)
+    })
+  })
+
+  return { warGroups, metaCounts }
+}
+
+const filterWars = modelsArr => modelsArr.filter(model => model.type_label === 'war')
+
+const badData = {
+  //  'Soviet–Japanese War'
+  'http://www.wikidata.org/entity/Q220602': true,
+  // Battle of Rehe
+  'http://www.wikidata.org/entity/Q2948000': true
+}
 
 export function init () {
   return dispatch => {
     axios.get('/data').then(response => {
-      const { wars, warGroups, battles } = response.data
+      const models = response.data
 
-      const warModels = Object.values(wars)// wars.map(id => models[id])
-      const battleModels = Object.values(battles)// battles.map(id => models[id])
-      addMomentDates(warModels)
-      addMomentDates(battleModels)
-      const { earliestTime, latestTime } = getTimeRange(warModels)
-
-      // console.log('erere', models)
-
-      // const { rows, earliestTime, latestTime } = prepareData(response.data)
-
-      dispatch({
-        type: 'SET_DATA',
-        payload: {
-          wars,
-          warGroups,
-          battles,
-          warsEarliestTime: earliestTime,
-          warsLatestTime: latestTime
+      /* There are a few data points that seem wrong, lets just filter these out
+      unitl maybe updating wikipedia */
+      Object.keys(models).forEach(key => {
+        if (models[key].label === 'Battle of Rehe') {
+          console.log('this key: ', key)
+        }
+        if (badData[key]) {
+          delete models[key]
         }
       })
+
+      const { warGroups, metaCounts } = buildWarGroups(models)
+      const modelsArr = Object.values(models)
+
+      addMomentDates(modelsArr)
+      const { earliestTime, latestTime } = getTimeRange(filterWars(modelsArr))
+
+      metaCounts.years = latestTime.diff(earliestTime, 'years')
+
+      return dispatch(batchActions([
+        setTimeRange(earliestTime, latestTime),
+        setFilterEarliestTime(earliestTime),
+        setFilterLatestTime(latestTime),
+        {
+          type: 'SET_DATA',
+          payload: {
+            models,
+            warGroups,
+            metaCounts
+          }
+        }
+      ]))
     })
+  }
+}
+
+export function setTimeRange (earliestTime, latestTime) {
+  return {
+    type: 'SET_TIME_RANGE',
+    payload: { earliestTime, latestTime }
   }
 }
 
@@ -144,38 +122,26 @@ export function setSelectedWars (warIds) {
 
 export function setFilterWarGroup (groupId) {
   return (dispatch, getState) => {
-    const state = getState()
-
+    const { models, warGroups } = getState().mapView
     if (!groupId) {
-      dispatch({ type: 'SET_FILTER_WAR_GROUP', payload: groupId })
-      dispatch(setFilterEarliestTime(state.mapView.warsEarliestTime))
-      dispatch(setFilterLatestTime(state.mapView.warsLatestTime))
-      dispatch(setSelectedWars())
+      const { earliestTime, latestTime } = getTimeRange(filterWars(Object.values(models)))
+      dispatch(batchActions([
+        { type: 'SET_FILTER_WAR_GROUP', payload: null },
+        setTimeRange(earliestTime, latestTime),
+        setFilterEarliestTime(earliestTime),
+        setFilterLatestTime(latestTime)
+      ]))
     } else {
-      // const group = state.mapView.warGroups.find(g => g.item === groupId)
-      const group = state.mapView.warGroups[groupId]
-      const warModels = group.wars.map(id => state.mapView.wars[id])
-      const { earliestTime, latestTime } = getTimeRange(warModels)
+      const group = warGroups[groupId]
+      const children = group.children.map(id => models[id])
+      const { earliestTime, latestTime } = getTimeRange(children)
 
-// const { earliestTime, latestTime } = getTimeRange(warModels)
-
-      // let earliestTime, latestTime
-      // group.wars.forEach(warRef => {
-      //   /* TODO: Should store as dictionary for faster lookups */
-      //   const war = state.mapView.wars.find(w => w.item === warRef.item)
-      //   if (!earliestTime || (war.startTimeMoment && war.startTimeMoment.isBefore(earliestTime))) {
-      //     earliestTime = war.startTimeMoment
-      //   }
-      //   if (!latestTime || (war.endTimeMoment && war.endTimeMoment.isAfter(latestTime))) {
-      //     latestTime = war.endTimeMoment
-      //   }
-      // })
-
-      /* TODO: Should use batch actions */
-      dispatch({ type: 'SET_FILTER_WAR_GROUP', payload: groupId })
-      dispatch(setFilterEarliestTime(earliestTime))
-      dispatch(setFilterLatestTime(latestTime))
-      dispatch(setSelectedWars(group.wars))
+      dispatch(batchActions([
+        { type: 'SET_FILTER_WAR_GROUP', payload: groupId },
+        setTimeRange(earliestTime, latestTime),
+        setFilterEarliestTime(earliestTime),
+        setFilterLatestTime(latestTime)
+      ]))
     }
   }
 }

@@ -3,19 +3,19 @@ import { shallow } from 'enzyme'
 import { fromJS } from 'immutable'
 import { Home } from '../Home'
 
-test('<Home> will render items', () => {
-  const $$items = fromJS([1, 2, 3])
+test('<Home> will render wikiIds', () => {
+  const $$wikiIds = fromJS([1, 2, 3])
 
   const home = shallow(
-    <Home $$items={$$items} />
+    <Home $$wikiIds={$$wikiIds} />
   )
 
-  expect(home.find('.list-item').length).toEqual(3)
+  expect(home.find('.list-wikiId').length).toEqual(3)
 })
 
 test('<Home> text input will update home state', () => {
   const home = shallow(
-    <Home $$items={fromJS([])} />
+    <Home $$wikiIds={fromJS([])} />
   )
 
   let input = home.find('input[type="text"]')

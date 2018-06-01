@@ -36,10 +36,10 @@ class SelectedWars extends React.Component {
   }
   onRemoveWar (id) {
     const wars = compact(this.props.selectedWars.map(war => {
-      if (war.item === id) {
+      if (war.wikiId === id) {
         return false
       }
-      return war.item
+      return war.wikiId
     }))
     this.props.dispatch(setSelectedWars(wars))
   }
@@ -51,7 +51,7 @@ class SelectedWars extends React.Component {
     }
 
     const results = selectedWars.map(war => (
-      <Pill key={war.item} label={war.item_label} onClick={() => this.onRemoveWar(war.item)} />
+      <Pill key={war.wikiId} label={war.label} onClick={() => this.onRemoveWar(war.wikiId)} />
     ))
 
     return (

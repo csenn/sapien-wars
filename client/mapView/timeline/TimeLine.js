@@ -46,18 +46,18 @@ export default class TimeLine extends React.Component {
   }
 
   renderWarGroupSelector () {
-    const items = this.props.warGroups.map(group => {
+    const wikiIds = this.props.warGroups.map(group => {
       const style = {
         padding: '4px 15px',
         fontSize: '14px'
       }
       return (
         <MenuItem
-          key={group.item}
-          value={group.item}
+          key={group.id}
+          value={group.id}
           style={style}
         >
-          {group.item_label} - ({group.wars.length} wars)
+          {group.label} - ({group.children.length} conflicts)
         </MenuItem>
       )
     })
@@ -73,9 +73,9 @@ export default class TimeLine extends React.Component {
         style={{ fontSize: '14px', position: 'relative', top: '5px', fontWeight: 'bold' }}
         disableUnderline>
         <MenuItem value={SELECT_ALL}>
-          <em>All Wars</em>
+          <em>Show All Wars</em>
         </MenuItem>
-        {items}
+        {wikiIds}
       </Select>
     )
   }
@@ -85,7 +85,7 @@ export default class TimeLine extends React.Component {
 
     const timeFrame = warsLatestTime.diff(warsEarliestTime)
 
-    const timeViews = getTimelineDates().map(momentTime => {
+    const timeViews = getTimelineDates(warsEarliestTime, warsLatestTime).map(momentTime => {
       const fromStart = momentTime.diff(warsEarliestTime) / timeFrame
 
       const style = {
@@ -163,8 +163,8 @@ export default class TimeLine extends React.Component {
         textStyle.right = 5
       }
 
-      const partOf = compact(battle.part_of.map(id =>
-        this.props.warGroupDict[id] && this.props.warGroupDict[id].item_label
+      const partOf = false && compact(battle.part_of.map(id =>
+        this.props.warGroupDict[id] && this.props.warGroupDict[id].label
       ))
 
       const partOfView = partOf.length && (
@@ -173,18 +173,12 @@ export default class TimeLine extends React.Component {
         </span>
       )
 
-      // const partOf = battle.part_of_label && (
-      //   <span style={{fontWeight: 'bold', color: 'black', marginRight: '3px'}}>
-      //     [{battle.part_of_label}]
-      //   </span>
-      // )
-
-      // <Checkbox
-      //   style={{ position: 'absolute', left: '-32px', top: '-7px', width: 30, height: 30 }}
-      //   checked={false}
-      //   onChange={this.hello}
-      //   value='checkedA'
-      //  />
+      const fromTime = battle.endTimeMoment.diff(battle.startTimeMoment) > 100 && (
+        <span>
+          <span style={{margin: '0 3px'}}>for</span>
+          {battle.endTimeMoment.from(battle.startTimeMoment, true)}
+        </span>
+      )
 
       return (
         <div style={rowStyle}>
@@ -193,11 +187,10 @@ export default class TimeLine extends React.Component {
           <span style={textWrapper}>
             <span style={textStyle}>
               {partOfView}
-              {battle.item_label}
+              {battle.label}
               <span style={{marginLeft: '7px', color: 'black'}}>
                 {formatMomentDate(battle.startTimeMoment)}
-                <span style={{margin: '0 3px'}}>for</span>
-                {battle.endTimeMoment.from(battle.startTimeMoment, true)}
+                {fromTime}
               </span>
             </span>
           </span>
@@ -207,9 +200,11 @@ export default class TimeLine extends React.Component {
   }
 
   render () {
-    const { battles, filterEarliestTime, filterLatestTime } = this.props
+    const { battles, warsEarliestTime, filterEarliestTime, filterLatestTime } = this.props
 
-    if (!filterEarliestTime) {
+    console.log(this.props)
+
+    if (!warsEarliestTime || !filterEarliestTime) {
       return false
     }
 
@@ -247,7 +242,7 @@ export default class TimeLine extends React.Component {
           left: 0,
           right: 0,
           bottom: 0,
-          padding: '0 10px 0 10px',
+          padding: '0 10px 40px 10px',
           overflowY: 'scroll'
         }}>
           {this.renderBattles(battles)}
