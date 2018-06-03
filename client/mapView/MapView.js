@@ -3,11 +3,9 @@ import { connect } from 'react-redux'
 import Paper from '@material-ui/core/Paper'
 import Map from './map/Map'
 import TimeLine from './timeline/TimeLine'
-import { makeLines } from './utils'
+// import { makeLines } from './utils'
 import { filterWarGroups, filterTimelineItems, filterMapItems } from './filters'
-import { init, setFilterEarliestTime, setFilterLatestTime, setFilterWarGroup } from './data/actions'
-
-const MAPBOX_TOKEN = process.env.MAPBOX_ACCESS_TOKEN; // eslint-disable-line
+import { init, setFilterEarliestTime, setFilterLatestTime, setFilterWarGroup, setSelectedWiki } from './data/actions'
 
 class MapView extends React.Component {
   constructor (props) {
@@ -52,7 +50,8 @@ class MapView extends React.Component {
       warsLatestTime,
       filterEarliestTime,
       filterLatestTime,
-      filterWarGroup
+      filterWarGroup,
+      selectedWiki
     } = this.props
 
     return (
@@ -73,16 +72,18 @@ class MapView extends React.Component {
               ready={this._isMounted}
               height={this.state.height}
               width={this.state.width}
-              battles={mapItems}
+              mapItems={mapItems}
               lines={lines}
               earliestTime={filterEarliestTime}
               latestTime={filterLatestTime}
+              selectedWiki={selectedWiki}
+              dispatchSetSelectedWiki={this.props.dispatchSetSelectedWiki}
             />
           </div>
 
           <div style={{position: 'absolute', top: '65%', left: 0, right: 0, bottom: 0}}>
             <TimeLine
-              battles={timelineItems}
+              timelineItems={timelineItems}
               warGroups={warGroups}
               warsEarliestTime={warsEarliestTime}
               warsLatestTime={warsLatestTime}
@@ -93,6 +94,7 @@ class MapView extends React.Component {
               dispatchSetFilterEarliestTime={this.props.dispatchSetFilterEarliestTime}
               dispatchSetFilterLatestTime={this.props.dispatchSetFilterLatestTime}
               dispatchSetFilterWarGroup={this.props.dispatchSetFilterWarGroup}
+              dispatchSetSelectedWiki={this.props.dispatchSetSelectedWiki}
             />
           </div>
         </div>
@@ -107,7 +109,8 @@ function mapDispatchToProps (dispatch) {
     dispatchInit: (...args) => dispatch(init(...args)),
     dispatchSetFilterEarliestTime: (...args) => dispatch(setFilterEarliestTime(...args)),
     dispatchSetFilterLatestTime: (...args) => dispatch(setFilterLatestTime(...args)),
-    dispatchSetFilterWarGroup: (...args) => dispatch(setFilterWarGroup(...args))
+    dispatchSetFilterWarGroup: (...args) => dispatch(setFilterWarGroup(...args)),
+    dispatchSetSelectedWiki: (...args) => dispatch(setSelectedWiki(...args))
   }
 }
 
@@ -125,7 +128,7 @@ function mapStateToProps (state) {
     filterLatestTime,
     filterWarGroup,
     metaCounts,
-    selectedWars
+    selectedWiki
   } = state.mapView
 
   const modelArr = Object.values(models)
@@ -133,7 +136,7 @@ function mapStateToProps (state) {
   const timelineItems = filterTimelineItems(modelArr, filterWarGroup, filterEarliestTime, filterLatestTime)
   const mapItems = filterMapItems(modelArr, filterWarGroup, filterEarliestTime, filterLatestTime)
 
-  const lines = makeLines(mapItems, warsLatestTime && warsLatestTime.diff(warsEarliestTime))
+  // const lines = makeLines(mapItems, warsLatestTime && warsLatestTime.diff(warsEarliestTime))
 
   return {
     // warGroupDict: warGroups,
@@ -147,7 +150,7 @@ function mapStateToProps (state) {
     filterLatestTime,
     filterWarGroup,
     metaCounts,
-    lines: lines || []
+    selectedWiki
   }
 }
 

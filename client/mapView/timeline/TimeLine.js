@@ -16,7 +16,7 @@ export default class TimeLine extends React.Component {
     this.onChangeRightPosition = this.onChangeRightPosition.bind(this)
     this.onFilterGroup = this.onFilterGroup.bind(this)
     this.renderTimeline = this.renderTimeline.bind(this)
-    this.renderBattles = this.renderBattles.bind(this)
+    this.renderTimelineItems = this.renderTimelineItems.bind(this)
     this.renderWarGroupSelector = this.renderWarGroupSelector.bind(this)
   }
 
@@ -110,12 +110,12 @@ export default class TimeLine extends React.Component {
     )
   }
 
-  renderBattles (battles) {
-    const { filterEarliestTime, filterLatestTime } = this.props
+  renderTimelineItems (timelineItems) {
+    const { filterEarliestTime, filterLatestTime, dispatchSetSelectedWiki } = this.props
 
     const timeFrame = filterLatestTime.diff(filterEarliestTime)
 
-    return battles.map((battle, index) => {
+    return timelineItems.map((battle, index) => {
       const fromStart = battle.startTimeMoment.diff(filterEarliestTime) / timeFrame
       const width = battle.endTimeMoment.diff(battle.startTimeMoment) / timeFrame
       const color = `rgba(${colorInterpolator(fromStart).join(',')},.5)`
@@ -127,8 +127,8 @@ export default class TimeLine extends React.Component {
 
       const rowStyle = {
         position: 'relative',
-        height: 25,
-        cursor: 'pointer'
+        height: 25
+
       }
 
       const barStyle = {
@@ -141,6 +141,7 @@ export default class TimeLine extends React.Component {
       }
 
       const textWrapper = {
+        cursor: 'pointer',
         display: 'inline-block',
         position: 'absolute',
         left: `${fromLeft}%`,
@@ -155,6 +156,15 @@ export default class TimeLine extends React.Component {
       const textStyle = {
         position: 'absolute',
         color: 'rgb(42, 65, 113)'
+      }
+
+      const numStyle = {
+        display: 'inline-block',
+        position: 'absolute',
+        top: '2px',
+        left: '-15px',
+        fontSize: '12px',
+        color: 'rgb(180,180,180)'
       }
 
       if (fromStart < 0.5) {
@@ -182,9 +192,9 @@ export default class TimeLine extends React.Component {
 
       return (
         <div style={rowStyle}>
-
+          <span style={numStyle}>{index + 1}</span>
           <span style={barStyle} />
-          <span style={textWrapper}>
+          <span style={textWrapper} onClick={() => dispatchSetSelectedWiki(battle.wikiId)}>
             <span style={textStyle}>
               {partOfView}
               {battle.label}
@@ -200,7 +210,7 @@ export default class TimeLine extends React.Component {
   }
 
   render () {
-    const { battles, warsEarliestTime, filterEarliestTime, filterLatestTime } = this.props
+    const { timelineItems, warsEarliestTime, filterEarliestTime, filterLatestTime } = this.props
 
     console.log(this.props)
 
@@ -242,10 +252,10 @@ export default class TimeLine extends React.Component {
           left: 0,
           right: 0,
           bottom: 0,
-          padding: '0 10px 40px 10px',
+          padding: '0 10px 40px 25px',
           overflowY: 'scroll'
         }}>
-          {this.renderBattles(battles)}
+          {this.renderTimelineItems(timelineItems)}
         </div>
       </div>
     )

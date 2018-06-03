@@ -61,6 +61,7 @@ function parseData (rawData) {
     if (!data[id]) {
       data[id] = {
         wikiId: id,
+        wikipediaUrl: row.article,
         label: row.item_label,
         type: row.type,
         type_label: row.type_label,

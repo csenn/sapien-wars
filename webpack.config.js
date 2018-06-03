@@ -39,7 +39,7 @@ const config = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
+        loader: 'babel-loader?cacheDirectory',
         options: {
           presets: ['@babel/preset-env', '@babel/react']
         }
@@ -61,7 +61,6 @@ const config = {
 
 if (process.env.NODE_ENV === 'production') {
   config.mode = 'production'
-  config.devtool = 'source-map'
 } else {
   config.mode = 'development'
   config.devtool = 'cheap-module-source-map'

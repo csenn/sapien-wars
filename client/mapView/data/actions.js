@@ -113,10 +113,10 @@ export function setFilterLatestTime (time) {
   }
 }
 
-export function setSelectedWars (warIds) {
+export function setSelectedWiki (id) {
   return {
-    type: 'SET_SELECTED_WARS',
-    payload: warIds || []
+    type: 'SET_SELECTED_WIKI',
+    payload: id
   }
 }
 

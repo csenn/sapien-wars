@@ -3,7 +3,7 @@ import DeckGL, {LineLayer, IconLayer, TextLayer, ArcLayer} from 'deck.gl'
 import MapGL from 'react-map-gl'
 import { colorInterpolator } from '../utils'
 import BattleDetails from './BattleDetails'
-import SelectedWars from './SelectedWars'
+import SelectedWiki from './SelectedWiki'
 
 const MAPBOX_TOKEN = process.env.MAPBOX_ACCESS_TOKEN; // eslint-disable-line
 
@@ -15,30 +15,41 @@ export default class Home extends React.Component {
         latitude: -22.2751,
         longitude: 43.9144,
         zoom: 1.7,
-        // bearing: -20.55991,
         bearing: 0,
         pitch: 55
       },
-      width: 1300,
-      height: 500
+      hoverInfo: null
     }
     this.hoverBattle = this.hoverBattle.bind(this)
   }
+
+  // _onHover(info) {
+  //   const hoverInfo = info.sample ? info : null;
+  //   if (hoverInfo !== this.state.hoverInfo) {
+  //     this.setState({hoverInfo});
+  //   }
+  // }
   hoverBattle (data) {
     if (data.object) {
-      this.setState({hoveredBattle: data.object})
+      this.setState({ hoverInfo: { row: data.object, x: data.x, y: data.y } })
     }
   }
   render () {
-    const { viewport } = this.state
-    const { ready, width, height, battles, earliestTime, latestTime, lines } = this.props
+    const { viewport, hoverInfo } = this.state
+    const { ready, width, height, mapItems, earliestTime, latestTime, selectedWiki } = this.props
 
     if (!ready) {
       return false
     }
 
+    const tooltip = hoverInfo && (
+      <div style={{ display: 'inline-box', position: 'absolute', zIndex: 2, top: hoverInfo.y, left: hoverInfo.x }}>
+        <BattleDetails selectedBattle={hoverInfo.row} />
+      </div>
+    )
+
     const iconLayer = new IconLayer({
-      data: battles,
+      data: mapItems,
       pickable: true,
       iconAtlas: 'location-icon-atlas.png',
       iconMapping: {
@@ -55,13 +66,19 @@ export default class Home extends React.Component {
       getPosition: d => d.coordinates,
       getIcon: d => 'marker',
       getSize: d => {
-        if (battles.length > 400) {
-          return d.type_label === 'war' ? 2 : 1
+        if (d.wikiId === selectedWiki) {
+          return 5
+        }
+        if (mapItems.length > 400) {
+          return d.type_label === 'war' ? 2 : 1.25
         }
         return d.type_label === 'war' ? 3 : 2
       },
       onHover: this.hoverBattle,
       getColor: d => {
+        if (d.wikiId === selectedWiki) {
+          return [255, 255, 0]
+        }
         if (d.type_label === 'war') {
           return [42, 65, 113]
         }
@@ -93,14 +110,14 @@ export default class Home extends React.Component {
 
     return (
       <Fragment>
-        <SelectedWars />
-        <BattleDetails selectedBattle={this.state.hoveredBattle} />
+        <SelectedWiki />
+        {tooltip}
         <MapGL
           {...viewport}
           width={width}
           height={height}
           mapboxApiAccessToken={MAPBOX_TOKEN}
-          onViewportChange={(viewport) => this.setState({viewport})}>
+          onViewportChange={(viewport) => this.setState({ viewport, hoverInfo: null })}>
           <DeckGL
             {...viewport}
             width={width}

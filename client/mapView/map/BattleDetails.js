@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 
 const Row = props => {
   return (
-    <div style={{paddingBottom: '7px', fontSize: '15px'}}>
+    <div style={{paddingBottom: '4px', fontSize: '12px'}}>
       <span style={{ fontWeight: 'bold' }}>{props.label}: </span>
       {props.value}
     </div>
@@ -29,11 +29,11 @@ class BattleDetails extends React.Component {
     })
 
     return (
-      <Paper style={{position: 'absolute', right: '25px', top: '25px', width: '350px', zIndex: 1}}>
-        <div style={{padding: 15, borderBottom: '1px solid rgb(230,230,230)', color: 'rgb(42, 65, 113)', fontSize: 18}}>
+      <Paper>
+        <div style={{padding: 5, borderBottom: '1px solid rgb(230,230,230)', color: 'rgb(42, 65, 113)', fontSize: 14}}>
           {selectedBattle.label}
         </div>
-        <div style={{padding: 15}}>
+        <div style={{padding: 5}}>
           <Row label='Wars' value={warViews} />
           <Row label='Start' value={formatMomentDate(selectedBattle.startTimeMoment)} />
           <Row label='End' value={formatMomentDate(selectedBattle.endTimeMoment)} />

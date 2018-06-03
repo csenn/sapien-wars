@@ -10,7 +10,8 @@ const initialState = {
   filterEarliestTime: null,
   filterLatestTime: null,
   filterWarGroup: null,
-  selectedWars: []
+
+  selectedWiki: null
 }
 
 export default function mapViewReducer (state = initialState, action) {
@@ -53,10 +54,10 @@ export default function mapViewReducer (state = initialState, action) {
         filterWarGroup: action.payload
       }
     }
-    case 'SET_SELECTED_WARS': {
+    case 'SET_SELECTED_WIKI': {
       return {
         ...state,
-        selectedWars: action.payload
+        selectedWiki: action.payload
       }
     }
     default:
