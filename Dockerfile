@@ -11,7 +11,7 @@ RUN npm install
 ADD webpack.config.js .
 ADD client client/
 ADD public public/
-RUN npm run client:build --verbose
+RUN npm run client:build
 
 ADD server server/
 

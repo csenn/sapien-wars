@@ -101,7 +101,7 @@ export default class Slider extends React.Component {
 
     const leftLabeStyles = {
       ...stylesLabel,
-      left: `calc(${100 * leftHandlePosition}% - 70px)`
+      left: `calc(${100 * leftHandlePosition}% - 63px)`
     }
 
     const rightLabeStyles = {

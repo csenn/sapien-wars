@@ -1,20 +1,21 @@
 import sortBy from 'lodash/sortBy'
 import moment from 'moment'
-
 const BIG_NUMBER = 100000000
 
-// const temp = {}
-
-export function formatMomentDate (momentDate) {
+export function formatMomentDate (momentDate, long) {
   if (!momentDate || !momentDate.year) {
     return ''
   }
 
-  if (momentDate.year() > 0) {
-    return momentDate.format('YYYY') + ' A.D.'
+  if (momentDate.year() <= 0) {
+    return `${Math.abs(momentDate.year())} B.C.`
   }
 
-  return `${Math.abs(momentDate.year())} B.C.`
+  if (long) {
+    return momentDate.format('MMM YYYY')
+  }
+
+  return momentDate.format('YYYY') + ' A.D.'
 }
 
 const FROM_COLOR = [255, 232, 98]
@@ -52,8 +53,6 @@ export function getTimelineDates (earliestTime, latestTime) {
     results.push(earliestTime.clone().add((i * interval), 'ms'))
   }
   return results
-
-  // const firstDate = moment().setYear(2000)
 }
 
 /* Assumes rows have keys 'startTimeMoment' and 'endTimeMoment' which is a moment object.
@@ -76,6 +75,9 @@ export function getTimeRange (rows) {
   return { earliestTime, latestTime }
 }
 
+/*
+NOT USED RIGHT NOW
+
 function getCost (battleA, battleB, timeRange) {
   if (battleA.wikiId === battleB.wikiId) {
     return BIG_NUMBER
@@ -85,7 +87,7 @@ function getCost (battleA, battleB, timeRange) {
     return BIG_NUMBER
   }
 
-  /* Pretty rough, but seems to work well enough */
+  // Pretty rough, but seems to work well enough
   const timePenalty = 100 * battleB.startTimeMoment.diff(battleA.startTimeMoment) / timeRange
   const distancePenalty = Math.abs(battleA.coordinates[0] - battleB.coordinates[0]) +
     (Math.abs(battleA.coordinates[1] - battleB.coordinates[1]))
@@ -119,25 +121,11 @@ export function makeLines (battles, timeRange) {
     lines.push({
       from: battles[costs[i].i],
       to: battles[costs[i].j],
-      // sourcePosition: .coordinates,
-      // targetPosition: .coordinates,
       cost: costs[i].cost
     })
   }
 
   return lines.filter(line => line.cost < 20)
-
-  // let previous = battles[0].coordinates
-  //
-  // const lines = []
-  // for (let i = 1; i < battles.length; i++) {
-  //   const sourcePosition = previous
-  //   const targetPosition = battles[i].coordinates
-  //   if (sourcePosition && targetPosition) {
-  //     lines.push({ sourcePosition, targetPosition })
-  //   }
-  //   previous = targetPosition
-  // }
-
-  // return lines
 }
+
+*/

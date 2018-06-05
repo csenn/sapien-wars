@@ -8,18 +8,13 @@ const parser = require('./parser')
 app.use(express.static(path.resolve(__dirname, '..', 'build')))
 
 let data = parser.getData()
-// let parsedBattles = null
 
 app.get('/data', (req, res) => {
-  return res.send(data)
+  return res.send({
+    data,
+    token: process.env.MapboxAccessToken
+  })
 })
-
-// app.get('/battles', (req, res) => {
-//   if (!parsedBattles) {
-//     parsedBattles = parser.parseBattlesRaw(battlesRawData)
-//   }
-//   return res.send(parsedBattles)
-// })
 
 // Always return the main index.html, so react-router render the route in the client
 app.get('/', (req, res) => {

@@ -4,8 +4,7 @@ import MapGL from 'react-map-gl'
 import { colorInterpolator } from '../utils'
 import BattleDetails from './BattleDetails'
 import SelectedWiki from './SelectedWiki'
-
-const MAPBOX_TOKEN = process.env.MAPBOX_ACCESS_TOKEN; // eslint-disable-line
+import CircularProgress from '@material-ui/core/CircularProgress'
 
 export default class Home extends React.Component {
   constructor (props) {
@@ -36,10 +35,14 @@ export default class Home extends React.Component {
   }
   render () {
     const { viewport, hoverInfo } = this.state
-    const { ready, width, height, mapItems, earliestTime, latestTime, selectedWiki } = this.props
+    const { token, ready, width, height, mapItems, earliestTime, latestTime, selectedWiki } = this.props
 
-    if (!ready) {
-      return false
+    if (!ready || !token) {
+      return (
+        <div style={{ textAlign: 'center', padding: '100px' }}>
+          <CircularProgress style={{ width: 80, height: 80, color: 'rgb(42, 65, 113)' }} />
+        </div>
+      )
     }
 
     const tooltip = hoverInfo && (
@@ -91,23 +94,6 @@ export default class Home extends React.Component {
       }
     })
 
-    // const lineLayer = new LineLayer({
-    //   data: lines,
-    //   pickable: true,
-    //   strokeWidth: 2,
-    //   getSourcePosition: d => d.from.coordinates,
-    //   getTargetPosition: d => d.to.coordinates,
-    //   getColor: d => {
-    //     if (!earliestTime) {
-    //       return [200, 200, 200]
-    //     }
-    //     const timeFrame = latestTime.diff(earliestTime)
-    //     const fromStart = d.from.startTimeMoment.diff(earliestTime)
-    //     return colorInterpolator(fromStart / timeFrame)
-    //   }
-    //   // onHover: ({object}) => setTooltip(`${object.from.name} to ${object.to.name}`)
-    // })
-
     return (
       <Fragment>
         <SelectedWiki />
@@ -116,7 +102,7 @@ export default class Home extends React.Component {
           {...viewport}
           width={width}
           height={height}
-          mapboxApiAccessToken={MAPBOX_TOKEN}
+          mapboxApiAccessToken={token}
           onViewportChange={(viewport) => this.setState({ viewport, hoverInfo: null })}>
           <DeckGL
             {...viewport}

@@ -54,7 +54,8 @@ const badData = {
 export function init () {
   return dispatch => {
     axios.get('/data').then(response => {
-      const models = response.data
+      const token = response.data.token
+      const models = response.data.data
 
       /* There are a few data points that seem wrong, lets just filter these out
       unitl maybe updating wikipedia */
@@ -82,6 +83,7 @@ export function init () {
         {
           type: 'SET_DATA',
           payload: {
+            token,
             models,
             warGroups,
             metaCounts

@@ -1,5 +1,6 @@
 
 const initialState = {
+  token: null,
   models: {},
   warGroups: {},
   metaCounts: {},
@@ -19,6 +20,7 @@ export default function mapViewReducer (state = initialState, action) {
     case 'SET_DATA': {
       return {
         ...state,
+        token: action.payload.token,
         models: action.payload.models,
         warGroups: action.payload.warGroups,
         metaCounts: action.payload.metaCounts

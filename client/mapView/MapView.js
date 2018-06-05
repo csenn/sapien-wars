@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import Paper from '@material-ui/core/Paper'
 import Map from './map/Map'
 import TimeLine from './timeline/TimeLine'
+import Acknowledgements from './Acknowledgements'
 // import { makeLines } from './utils'
 import { filterWarGroups, filterTimelineItems, filterMapItems } from './filters'
 import { init, setFilterEarliestTime, setFilterLatestTime, setFilterWarGroup, setSelectedWiki } from './data/actions'
@@ -41,6 +42,7 @@ class MapView extends React.Component {
   }
   render () {
     const {
+      token,
       timelineItems,
       mapItems,
       metaCounts,
@@ -63,12 +65,14 @@ class MapView extends React.Component {
             <span style={{fontSize: '16px', marginLeft: '25px', color: 'black'}}>
               {metaCounts.years} years, {metaCounts.war} wars, {metaCounts.battle} battles
             </span>
+            <Acknowledgements />
           </h3>
         </Paper>
 
         <div style={{ position: 'relative', height: 'calc(100% - 70px)', width: '100%' }}>
           <div ref={node => (this.mapWrapper = node)} style={{ position: 'absolute', top: 0, bottom: '35%', left: 0, right: 0 }}>
             <Map
+              token={token}
               ready={this._isMounted}
               height={this.state.height}
               width={this.state.width}
@@ -83,6 +87,7 @@ class MapView extends React.Component {
 
           <div style={{position: 'absolute', top: '65%', left: 0, right: 0, bottom: 0}}>
             <TimeLine
+              models={this.props.models}
               timelineItems={timelineItems}
               warGroups={warGroups}
               warsEarliestTime={warsEarliestTime}
@@ -120,6 +125,7 @@ function mapStateToProps (state) {
     console.log(state)
   }
   const {
+    token,
     models,
     warGroups,
     warsEarliestTime,
@@ -139,6 +145,8 @@ function mapStateToProps (state) {
   // const lines = makeLines(mapItems, warsLatestTime && warsLatestTime.diff(warsEarliestTime))
 
   return {
+    token,
+    models,
     // warGroupDict: warGroups,
     warGroups: filteredWarGroups,
     // wars: filteredWars,

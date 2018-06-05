@@ -7,6 +7,8 @@ import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 const SELECT_ALL = 'All Wars'
 
+const TWENTY_YEARS = 1000 * 60 * 60 * 24 * 365 * 20
+
 export default class TimeLine extends React.Component {
   constructor (props) {
     super(props)
@@ -173,11 +175,11 @@ export default class TimeLine extends React.Component {
         textStyle.right = 5
       }
 
-      const partOf = false && compact(battle.part_of.map(id =>
-        this.props.warGroupDict[id] && this.props.warGroupDict[id].label
+      const partOf = compact(battle.part_of.map(id =>
+        this.props.models[id] && this.props.models[id].label
       ))
 
-      const partOfView = partOf.length && (
+      const partOfView = !!partOf.length && (
         <span style={{fontWeight: 'bold', color: 'black', marginRight: '3px'}}>
           [{partOf.join(', ')}]
         </span>
@@ -210,13 +212,13 @@ export default class TimeLine extends React.Component {
   }
 
   render () {
-    const { timelineItems, warsEarliestTime, filterEarliestTime, filterLatestTime } = this.props
-
-    console.log(this.props)
+    const { timelineItems, warsLatestTime, warsEarliestTime, filterEarliestTime, filterLatestTime } = this.props
 
     if (!warsEarliestTime || !filterEarliestTime) {
       return false
     }
+
+    const isLessThanTwentyYears = TWENTY_YEARS > warsLatestTime.diff(warsEarliestTime)
 
     return (
       <div>
@@ -234,8 +236,8 @@ export default class TimeLine extends React.Component {
 
           <div style={{ flexGrow: 8, marginRight: 72 }}>
             <Slider
-              leftLabel={formatMomentDate(filterEarliestTime)}
-              rightLabel={formatMomentDate(filterLatestTime)}
+              leftLabel={formatMomentDate(filterEarliestTime, isLessThanTwentyYears)}
+              rightLabel={formatMomentDate(filterLatestTime, isLessThanTwentyYears)}
               leftHandlePosition={this.convertTimeToPercent(filterEarliestTime)}
               rightHandlePosition={this.convertTimeToPercent(filterLatestTime)}
               onChangeRightPosition={this.onChangeRightPosition}
