@@ -19,25 +19,14 @@
     "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.0.0-beta.49",
-    "@babel/preset-env": "^7.0.0-beta.49",
-    "@babel/preset-react": "^7.0.0-beta.49",
-    "@babel/preset-stage-2": "^7.0.0-beta.49",
-    "babel-loader": "^8.0.0-beta.3",
-    "clean-webpack-plugin": "^0.1.19",
-    "copy-webpack-plugin": "^4.5.1",
-    "css-loader": "^0.28.11",
-    "html-webpack-plugin": "^3.2.0",
+    "@vitejs/plugin-react": "^4.1.0",
     "standard": "^11.0.1",
-    "style-loader": "^0.21.0",
-    "webpack": "^4.9.1",
-    "webpack-cli": "^2.1.4",
-    "webpack-dev-server": "^3.1.4"
+    "vite": "^5.2.0"
   },
   "scripts": {
-    "dev": "NODE_ENV=development webpack-dev-server --progress --inline --hot",
+    "dev": "vite",
     "build:data": "node scripts/build-data.js",
-    "build": "npm run build:data && NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack",
+    "build": "npm run build:data && NODE_ENV=production vite build",
     "test": "jest client/**",
     "lint": "standard 'client/**/*.js'"
   },
