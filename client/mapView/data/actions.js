@@ -53,9 +53,9 @@ const badData = {
 
 export function init () {
   return dispatch => {
-    axios.get('/data').then(response => {
-      const token = response.data.token
-      const models = response.data.data
+    axios.get('data.json').then(response => {
+      const token = process.env.MAPBOX_TOKEN
+      const models = response.data
 
       /* There are a few data points that seem wrong, lets just filter these out
       unitl maybe updating wikipedia */

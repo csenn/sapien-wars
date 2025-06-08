@@ -1,4 +1,4 @@
-FROM node:9.11.1
+FROM node:18-alpine
 
 RUN mkdir -p /app
 
@@ -11,8 +11,7 @@ RUN npm install
 ADD webpack.config.js .
 ADD client client/
 ADD public public/
-RUN npm run client:build
+ADD scripts scripts/
+RUN npm run build
 
-ADD server server/
-
-CMD ["npm", "run", "server:prod"]
+CMD ["npx", "serve", "-s", "build"]

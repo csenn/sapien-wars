@@ -21,7 +21,8 @@ const config = {
     new CleanWebpackPlugin([BUILD_DIR], { watch: true }),
     new webpack.DefinePlugin({
       'process.env': {
-        NODE_ENV: JSON.stringify(process.env.NODE_ENV)
+        NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+        MAPBOX_TOKEN: JSON.stringify(process.env.MAPBOX_TOKEN)
       }
     }),
     new HtmlWebpackPlugin({
@@ -50,10 +51,7 @@ const config = {
   },
   devServer: {
     // stats: 'errors-only',
-    port: '9222',
-    proxy: {
-      '*': { target: 'http://localhost:8020' }
-    }
+    port: '9222'
   }
 }
 
