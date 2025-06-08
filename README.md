@@ -1,6 +1,7 @@
 # Sapien Wars
 
 Static visualization of historical wars using React and Mapbox.
+The project now uses [Vite](https://vitejs.dev) for development and builds.
 
 ## Development
 
@@ -11,7 +12,7 @@ npm run dev
 
 ## Build
 
-Create the parsed data and generate the production bundle:
+Create the parsed data and generate the production bundle using Vite:
 
 ```bash
 MAPBOX_TOKEN=your_token npm run build
