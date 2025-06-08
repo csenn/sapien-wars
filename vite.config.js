@@ -16,7 +16,7 @@ export default defineConfig({
   },
   esbuild: {
     loader: 'jsx',
-    include: /\.js$/,
+    include: /\.[jt]sx?$/,
   },
   define: {
     'process.env': {
